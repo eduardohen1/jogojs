@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>JogoJS</title>
+   <style>
+      canvas {
+         position: absolute;
+         top: 0px;
+         bottom: 0px;
+         left: 0px;
+         right: 0px;
+         margin: auto;
+      }
+   </style>
+</head>
+<body>
+   <script>
+      //variaveis do jogo
+      var canvas; //desenhar o jogo
+      var contexto; //contexto dojogo
+      var ALTURA, LARGURA; //tamanho janela
+      var frames = 0; //cada quadro
+      var maxPulos = 3; //qte de pulos
+      var velocidade = 6; //velocidade dos objetos
+      var estadoAtual;
+
+      //objetos
+      var chao = {
+         //atributos
+         y: 550,
+         altura: 50,
+         cor: "#ffdf70",
+         //metodos
+         desenhar: function(){
+            contexto.fillStyle = this.cor;
+            contexto.fillRect(0, this.y, LARGURA, this.altura)
+         }
+      };
+
+      var personagem ={
+         //atributos
+         x: 50,
+         y: 0,
+         altura: 50,
+         largura: 50,
+         cor: "#ff4e4e",
+         gravidade: 1.6,
+         velocidade: 0,
+         forcaDoPulo: 23.6,
+         qtePulos: 0,
+         score: 0,
+         //metodos
+         atualizar: function(){},
+         pular: function(){},
+         desenhar: function(){
+            contexto.fillStyle = this.cor;
+            contexto.fillRect(this.x, this.y, this.largura, this.altura);
+         },
+         reset: function(){}
+      };
+
+      //métodos do jogo
+      function clique(event){
+
+      }
+
+      //metodo para rodar o jogo
+      function rodar(){
+         desenhar();
+         window.requestAnimationFrame(rodar); //criar um loop infinito
+      }
+      //metodo de atualizar os objetos
+      function atualizar(){
+
+      }
+      //metodo para desenhar os objetos do jogo
+      function desenhar(){
+         contexto.fillStyle = "#80daff"; //definir cor de fundo
+         contexto.fillRect(0, 0, LARGURA, ALTURA);
+         chao.desenhar();
+         personagem.desenhar();
+      }
+
+      //metodo principal
+      function main(){
+         ALTURA  = window.innerHeight;
+         LARGURA = window.innerWidth;
+
+         //definir um tamanho para o jogo
+         if(LARGURA >= 500){
+            LARGURA = 600;
+            ALTURA  = 600;
+         }
+
+         //desenhar a nossa engine:
+         canvas = document.createElement("canvas");
+         canvas.width  = LARGURA;
+         canvas.height = ALTURA;
+         canvas.style.border = "1px solid #000"; //criar uma borda na cor preta
+         
+         contexto = canvas.getContext("2d");
+         document.body.appendChild(canvas); //adicionar a varivel no corpo HTML
+         document.addEventListener("mousedown", clique); //definindo o evento do clique
+
+         //loop do jogo
+         rodar();
+
+      }//fechando metodo main
+
+      main();
+   </script>
+</body>
+</html>
