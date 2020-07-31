@@ -52,35 +52,95 @@
          qtePulos: 0,
          score: 0,
          //metodos
-         atualizar: function(){},
-         pular: function(){},
+         atualizar: function(){
+            this.velocidade += this.gravidade;
+            this.y += this.velocidade;
+            if(this.y > (chao.y - this.altura)){
+               this.y = chao.y - this.altura;
+               this.qtePulos = 0;
+               this.velocidade = 0;
+            }
+         },
+         pular: function(){
+            if(this.qtePulos < maxPulos){
+               this.velocidade = -this.forcaDoPulo;
+               this.qtePulos++;
+            }
+         },
          desenhar: function(){
             contexto.fillStyle = this.cor;
             contexto.fillRect(this.x, this.y, this.largura, this.altura);
          },
-         reset: function(){}
+         reset: function(){
+            this.velocidade = 0;
+            this.y = 0;
+            this.score = 0;
+         }
       };
 
       var obstaculos ={
          //atributos
          objetos: [],
-         cores: ["#ffbc1c", "#ff1c1c", "#ff85e1","#52a7ff","#78ff5d"]
+         cores: ["#ffbc1c", "#ff1c1c", "#ff85e1","#52a7ff","#78ff5d"],
+         tempoInsere: 0,
          //metodos
+         insere: function(){
+            this.objetos.push({
+               x: LARGURA, 
+               largura: 50,
+               altura: 30 + Math.floor(120 * Math.random()),
+               cor: this.cores[Math.floor(5 * Math.random())]
+            });
+            this.tempoInsere = 40 + Math.floor(20 * Math.random());
+         },
+         atualizar: function(){
+            if(this.tempoInsere == 0){
+               this.insere();
+            }else{
+               this.tempoInsere--;
+            }
+            for(var i = 0, tam = this.objetos.length; i < tam; i++){
+               var objeto = this.objetos[i];
+               objeto.x -= velocidade;
+               if(objeto.x <= -objeto.largura){
+                  this.objetos.splice(i, 1);
+                  tam--;
+                  i--;
+               }
+            }
+         },
+         limpar: function(){
+            this.objetos = [];
+         },
+         desenhar: function(){
+            for(var i=0, tam = this.objetos.length; i < tam; i++){
+               var objeto = this.objetos[i];
+               contexto.fillStyle = objeto.cor;
+               contexto.fillRect(
+                  objeto.x,
+                  (chao.y - objeto.altura),
+                  objeto.largura,
+                  objeto.altura
+               );
+            }
+         }
       };      
 
       //métodos do jogo
       function clique(event){
-
+         personagem.pular();
       }
 
       //metodo para rodar o jogo
       function rodar(){
+         atualizar();
          desenhar();
          window.requestAnimationFrame(rodar); //criar um loop infinito
       }
       //metodo de atualizar os objetos
       function atualizar(){
-
+         personagem.atualizar();
+         obstaculos.atualizar();
       }
       //metodo para desenhar os objetos do jogo
       function desenhar(){
@@ -88,6 +148,7 @@
          contexto.fillRect(0, 0, LARGURA, ALTURA);
          chao.desenhar();
          personagem.desenhar();
+         obstaculos.desenhar();
       }
 
       //metodo principal
