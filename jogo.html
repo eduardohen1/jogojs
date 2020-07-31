@@ -26,6 +26,13 @@
       var velocidade = 6; //velocidade dos objetos
       var estadoAtual;
 
+      //enum
+      var estados = {
+         jogar:   0,
+         jogando: 1,
+         perdeu:  2
+      }
+
       //objetos
       var chao = {
          //atributos
@@ -55,7 +62,9 @@
          atualizar: function(){
             this.velocidade += this.gravidade;
             this.y += this.velocidade;
-            if(this.y > (chao.y - this.altura)){
+            if(this.y > (chao.y - this.altura)
+               && estadoAtual != estados.perdeu
+            ){
                this.y = chao.y - this.altura;
                this.qtePulos = 0;
                this.velocidade = 0;
@@ -102,7 +111,16 @@
             for(var i = 0, tam = this.objetos.length; i < tam; i++){
                var objeto = this.objetos[i];
                objeto.x -= velocidade;
-               if(objeto.x <= -objeto.largura){
+               //colisao:
+               if(
+                  personagem.x < (objeto.x + objeto.largura) &&
+                  (personagem.x + personagem.largura) >= objeto.x &&
+                  (personagem.y + personagem.altura ) >= (chao.y - objeto.altura)
+               ){
+                  estadoAtual = estados.perdeu;
+               }else if(objeto.x == 0){
+                  personagem.score++;
+               }else if(objeto.x <= -objeto.largura){
                   this.objetos.splice(i, 1);
                   tam--;
                   i--;
@@ -128,7 +146,22 @@
 
       //métodos do jogo
       function clique(event){
-         personagem.pular();
+         switch(estadoAtual){
+            case estados.jogando:
+               personagem.pular();
+               break;
+            case estados.jogar:
+               estadoAtual = estados.jogando;
+               break;
+            case estados.perdeu:
+               if(personagem.y >= (2*ALTURA)){
+                  estadoAtual = estados.jogar;
+                  obstaculos.limpar();
+                  personagem.reset();
+               }
+               break;
+         }
+         //personagem.pular();
       }
 
       //metodo para rodar o jogo
@@ -139,16 +172,59 @@
       }
       //metodo de atualizar os objetos
       function atualizar(){
+         frames++;
          personagem.atualizar();
-         obstaculos.atualizar();
+         if(estadoAtual == estados.jogando)
+            obstaculos.atualizar();
       }
       //metodo para desenhar os objetos do jogo
       function desenhar(){
          contexto.fillStyle = "#80daff"; //definir cor de fundo
          contexto.fillRect(0, 0, LARGURA, ALTURA);
+
+         //criar o score
+         contexto.fillStyle = "#fff";
+         contexto.font = "50px Arial";
+         contexto.fillText(personagem.score, 30, 68);
+
+         switch(estadoAtual){
+            case estados.jogar:
+               contexto.fillStyle = "green";
+               contexto.fillRect(
+                  ((LARGURA /2) - 50),
+                  ((ALTURA / 2) - 50),
+                  100,
+                  100,
+               );
+               break;
+            case estados.jogando:
+               obstaculos.desenhar();
+               break;
+            case estados.perdeu:
+               contexto.fillStyle = "red";
+               contexto.fillRect(
+                  ((LARGURA /2) - 50),
+                  ((ALTURA / 2) - 50),
+                  100,
+                  100,
+               );
+               //colocar o score no centro da tela; copiar o objeto e depois
+               // retorno ele para o local
+               contexto.save();
+               contexto.translate(LARGURA/2, ALTURA/2);
+               contexto.fillStyle = "#fff";
+               //centralizar o score
+               if(personagem.score < 10)
+                  contexto.fillText(personagem.score, -13, 19);
+               else if(personagem.score >= 10 && personagem.score < 100)
+                  contexto.fillText(personagem.score, -26, 19);
+               else
+                  contexto.fillText(personagem.score, -39, 19);
+               contexto.restore();
+               break;
+         }
          chao.desenhar();
          personagem.desenhar();
-         obstaculos.desenhar();
       }
 
       //metodo principal
@@ -171,6 +247,9 @@
          contexto = canvas.getContext("2d");
          document.body.appendChild(canvas); //adicionar a varivel no corpo HTML
          document.addEventListener("mousedown", clique); //definindo o evento do clique
+
+         //estado inicial do jogo
+         estadoAtual = estados.jogar;
 
          //loop do jogo
          rodar();
